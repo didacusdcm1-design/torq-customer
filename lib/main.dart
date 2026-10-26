@@ -79,35 +79,81 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 }
 
-class HomeTab extends StatefulWidget { final String token; const HomeTab({super.key, required this.token}); @override State<HomeTab> createState() => _HomeTabState(); }
+class HomeTab extends StatefulWidget {
+  final String token;
+  const HomeTab({super.key, required this.token});
+  @override
+  State<HomeTab> createState() => _HomeTabState();
+}
+
 class _HomeTabState extends State<HomeTab> {
   final _tripService = TripService();
   List<dynamic> _trips = [];
   bool _isLoading = true;
 
-  @override void initState() { super.initState(); _loadTrips(); }
-  void _loadTrips() async { setState(() => _isLoading = true); final trips = await _tripService.getTripHistory(widget.token); setState(() { _trips = trips; _isLoading = false; }); }
+  @override
+  void initState() {
+    super.initState();
+    _loadTrips();
+    
+    // CONNECT TO WEBSOCKET FOR LIVE UPDATES
+    _tripService.connectWebSocket((newTripData) {
+      setState(() {
+        // Find the trip in the list and update it, or add it if it's new
+        int index = _trips.indexWhere((t) => t['id'] == newTripData['id']);
+        if (index != -1) {
+          _trips[index] = newTripData;
+        } else {
+          _trips.insert(0, newTripData);
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _tripService.socket.disconnect();
+    super.dispose();
+  }
+
+  void _loadTrips() async {
+    setState(() => _isLoading = true);
+    final trips = await _tripService.getTripHistory(widget.token);
+    setState(() {
+      _trips = trips;
+      _isLoading = false;
+    });
+  }
 
   Color _getStatusColor(String status) {
-    switch (status) { case 'REQUESTED': return Colors.orange; case 'ACCEPTED': return Colors.blue; case 'ARRIVED': return Colors.purple; case 'IN_PROGRESS': return Colors.teal; case 'COMPLETED': return Colors.green; default: return Colors.grey; }
+    switch (status) {
+      case 'REQUESTED': return Colors.orange;
+      case 'ACCEPTED': return Colors.blue;
+      case 'ARRIVED': return Colors.purple;
+      case 'IN_PROGRESS': return Colors.teal;
+      case 'COMPLETED': return Colors.green;
+      default: return Colors.grey;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('TORQ Dashboard', style: TextStyle(fontWeight: FontWeight.bold)), backgroundColor: const Color(0xFF0B121B), foregroundColor: Colors.white),
-      floatingActionButton: FloatingActionButton.extended(onPressed: () async { await Navigator.push(context, MaterialPageRoute(builder: (context) => CreateTripScreen(token: widget.token))); _loadTrips(); }, icon: const Icon(Icons.add), label: const Text('Request Trip', style: TextStyle(fontWeight: FontWeight.bold)), backgroundColor: const Color(0xFFFFBD19), foregroundColor: const Color(0xFF0B121B)),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          await Navigator.push(context, MaterialPageRoute(builder: (context) => CreateTripScreen(token: widget.token)));
+          _loadTrips();
+        },
+        icon: const Icon(Icons.add), label: const Text('Request Trip'), backgroundColor: const Color(0xFFFFBD19), foregroundColor: const Color(0xFF0B121B),
+      ),
       body: Column(children: [
         const Padding(padding: EdgeInsets.all(20.0), child: Text('Recent Activity', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
-        Expanded(child: _isLoading ? const Center(child: CircularProgressIndicator()) : _trips.isEmpty ? const Center(child: Text('No trips requested yet.', style: TextStyle(color: Colors.grey))) : ListView.builder(
+        Expanded(child: _isLoading ? const Center(child: CircularProgressIndicator()) : _trips.isEmpty ? const Center(child: Text('No trips requested yet.')) : ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 16), itemCount: _trips.length, itemBuilder: (context, index) {
             final trip = _trips[index]; final fare = double.tryParse(trip['estimatedFare']?.toString() ?? '0.0') ?? 0.0; final status = trip['status'] ?? 'REQUESTED';
-            return Card(margin: const EdgeInsets.only(bottom: 12), elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)), child: Padding(padding: const EdgeInsets.all(16.0), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            return Card(margin: const EdgeInsets.only(bottom: 12), child: Padding(padding: const EdgeInsets.all(16.0), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ Text('Trip #${trip['id'].toString().substring(0, 8)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: _getStatusColor(status).withOpacity(0.1), borderRadius: BorderRadius.circular(20)), child: Text(status, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _getStatusColor(status)))) ]),
-              const SizedBox(height: 12),
-              Row(children: [const Icon(Icons.my_location, color: Colors.blue, size: 16), const SizedBox(width: 8), Text('${trip['pickupLat']}, ${trip['pickupLng']}', style: const TextStyle(fontSize: 12))]),
-              const SizedBox(height: 4),
-              Row(children: [const Icon(Icons.location_on, color: Colors.red, size: 16), const SizedBox(width: 8), Text('${trip['dropoffLat']}, ${trip['dropoffLng']}', style: const TextStyle(fontSize: 12))]),
               const SizedBox(height: 12),
               Text('Fare: KSh ${fare.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 14)),
             ])));
@@ -215,3 +261,4 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
     );
   }
 }
+
