@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class TripService {
-  final String baseUrl = 'https://torq-backend-xxxx.onrender.com';
+  final String baseUrl = 'https://torq-backend.onrender.com';
 
   Future<bool> requestTrip(String token, double pickupLat, double pickupLng, double dropoffLat, double dropoffLng) async {
     try {
