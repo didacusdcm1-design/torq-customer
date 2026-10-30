@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -107,6 +107,23 @@ class ApiService {
       } else {
         return {'success': false, 'message': data['message'] ?? 'Dispatch failed'};
       }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error'};
+    }
+  }
+  static Future<Map<String, dynamic>> rateTrip(String tripId, int rating) async {
+    try {
+      final token = await getToken();
+      final response = await http.patch(
+        Uri.parse('$baseUrl/trips/$tripId/rate'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: jsonEncode({'rating': rating}),
+      );
+      if (response.statusCode == 200) return {'success': true};
+      return {'success': false, 'message': 'Failed to submit rating'};
     } catch (e) {
       return {'success': false, 'message': 'Network error'};
     }
