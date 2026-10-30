@@ -145,4 +145,24 @@ class ApiService {
       return null;
     }
   }
+  static Future<bool> cancelTrip(String tripId, String cancelledBy, String reason, String note) async {
+    try {
+      final token = await getToken();
+      final response = await http.patch(
+        Uri.parse('$baseUrl/trips/cancel/$tripId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: jsonEncode({
+          'cancelledBy': cancelledBy,
+          'reason': reason,
+          'note': note,
+        }),
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
 }
