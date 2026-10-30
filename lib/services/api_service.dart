@@ -128,4 +128,21 @@ class ApiService {
       return {'success': false, 'message': 'Network error'};
     }
   }
+  static Future<Map<String, dynamic>?> getCustomerActiveTrip() async {
+    try {
+      final token = await getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/trips/customer/active'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data == null) return null;
+        return data;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
 }
