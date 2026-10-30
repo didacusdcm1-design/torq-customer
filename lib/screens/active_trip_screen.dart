@@ -20,8 +20,8 @@ class _ActiveTripScreenState extends State<ActiveTripScreen> {
   void initState() {
     super.initState();
     _trip = widget.initialTrip;
-    // Poll every 10 seconds for status updates
-    _pollingTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    // Poll every 5 seconds for status updates
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       _fetchTripStatus();
     });
   }
@@ -74,8 +74,8 @@ class _ActiveTripScreenState extends State<ActiveTripScreen> {
     if (_trip == null) return const Scaffold(backgroundColor: Color(0xFF0A0A0A), body: Center(child: CircularProgressIndicator()));
 
     final status = _trip!['status'];
-    final rider = _trip!['rider'];
-    final riderProfile = rider?['riderProfile'];
+    final rider = _trip!['rider']; // Can be null if no rider accepted yet
+    final riderProfile = rider != null ? rider['riderProfile'] : null;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
@@ -102,7 +102,7 @@ class _ActiveTripScreenState extends State<ActiveTripScreen> {
               ),
             ),
 
-            // Driver Info Card
+            // Driver Info Card (Only shows if rider is assigned)
             if (rider != null)
               Container(
                 margin: const EdgeInsets.all(20),
@@ -128,7 +128,7 @@ class _ActiveTripScreenState extends State<ActiveTripScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(riderProfile?['fullName'] ?? 'Your Rider', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text("${riderProfile?['bikeMake']} ${riderProfile?['bikeModel']} • ${riderProfile?['bikeReg']}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                          Text("${riderProfile?['bikeMake'] ?? ''} ${riderProfile?['bikeModel'] ?? ''} • ${riderProfile?['bikeReg'] ?? ''}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
                         ],
                       ),
                     ),
@@ -147,36 +147,52 @@ class _ActiveTripScreenState extends State<ActiveTripScreen> {
                 ),
               ),
 
-            // Trip Details
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    _buildTimelineStep("Pickup", "Lat: ${_trip!['pickupLat']}, Lng: ${_trip!['pickupLng']}", true),
-                    _buildTimelineLine(),
-                    _buildTimelineStep("Destination", "Lat: ${_trip!['dropoffLat']}, Lng: ${_trip!['dropoffLng']}", false),
-                    const Spacer(),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFCD34D).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text("Total Fare", style: TextStyle(color: Colors.grey, fontSize: 16)),
-                          Text("KES ${_trip!['estimatedFare']}", style: const TextStyle(color: Color(0xFFFCD34D), fontSize: 24, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+            // Searching for rider animation
+            if (rider == null)
+              const Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: Color(0xFFFCD34D)),
+                      SizedBox(height: 24),
+                      Text("Finding a rider near you...", style: TextStyle(color: Colors.white, fontSize: 18)),
+                    ],
+                  ),
                 ),
               ),
-            ),
+
+            // Trip Details (Only shows if rider is assigned)
+            if (rider != null)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      _buildTimelineStep("Pickup", "Lat: ${_trip!['pickupLat']}, Lng: ${_trip!['pickupLng']}", true),
+                      _buildTimelineLine(),
+                      _buildTimelineStep("Destination", "Lat: ${_trip!['dropoffLat']}, Lng: ${_trip!['dropoffLng']}", false),
+                      const Spacer(),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFCD34D).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Total Fare", style: TextStyle(color: Colors.grey, fontSize: 16)),
+                            Text("KES ${_trip!['estimatedFare']}", style: const TextStyle(color: Color(0xFFFCD34D), fontSize: 24, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
