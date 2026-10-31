@@ -165,4 +165,31 @@ class ApiService {
       return false;
     }
   }
+  static Future<List<dynamic>> getCustomerHistory() async {
+    try {
+      final token = await getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/customer/history'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (response.statusCode == 200) return jsonDecode(response.body);
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<List<dynamic>> getCustomerNotifications() async {
+    try {
+      final token = await getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/customer/notifications'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (response.statusCode == 200) return jsonDecode(response.body);
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
 }
