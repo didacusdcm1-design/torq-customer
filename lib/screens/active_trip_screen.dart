@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 
@@ -129,7 +129,7 @@ class _ActiveTripScreenState extends State<ActiveTripScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(riderProfile?['fullName'] ?? 'Your Rider', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text("${riderProfile?['bikeMake'] ?? ''} ${riderProfile?['bikeModel'] ?? ''} • ${riderProfile?['bikeReg'] ?? ''}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                          Text("${riderProfile?['bikeMake'] ?? ''} ${riderProfile?['bikeModel'] ?? ''} â€¢ ${riderProfile?['bikeReg'] ?? ''}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
                         ],
                       ),
                     ),
@@ -173,7 +173,60 @@ class _ActiveTripScreenState extends State<ActiveTripScreen> {
                       _buildTimelineStep("Pickup", "Lat: ${_trip!['pickupLat']}, Lng: ${_trip!['pickupLng']}", true),
                       _buildTimelineLine(),
                       _buildTimelineStep("Destination", "Lat: ${_trip!['dropoffLat']}, Lng: ${_trip!['dropoffLng']}", false),
-                      const Spacer(),
+                      const Spacer(),            // ACTION BUTTONS GRID (Chat, Call, Share, SOS)
+            if (rider != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.chat_bubble_outline,
+                            label: "Chat Driver",
+                            color: const Color(0xFFFCD34D),
+                            onTap: () { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Chat coming soon!"))); },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.phone_outlined,
+                            label: "Call Driver",
+                            color: const Color(0xFFFCD34D),
+                            onTap: () { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Calling driver..."))); },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.share_outlined,
+                            label: "Share Trip",
+                            color: const Color(0xFFFCD34D),
+                            onTap: () { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Share link copied!"))); },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.emergency,
+                            label: "SOS Emergency",
+                            color: Colors.red,
+                            isSOS: true,
+                            onTap: () { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("SOS Alert Sent!"), backgroundColor: Colors.red)); },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
@@ -234,6 +287,26 @@ class _ActiveTripScreenState extends State<ActiveTripScreen> {
         height: 40,
         width: 2,
         color: Colors.grey[800],
+      ),
+    );
+  }
+  Widget _buildActionButton({required IconData icon, required String label, required Color color, required VoidCallback onTap, bool isSOS = false}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: isSOS ? color.withOpacity(0.2) : const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isSOS ? color : Colors.grey.withOpacity(0.2)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: isSOS ? color : const Color(0xFFFCD34D), size: 28),
+            const SizedBox(height: 8),
+            Text(label, style: TextStyle(color: isSOS ? color : Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+          ],
+        ),
       ),
     );
   }
