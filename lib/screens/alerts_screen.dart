@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 
 class AlertsScreen extends StatefulWidget {
@@ -72,7 +72,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                             Text(alert['message'] ?? 'Notification', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 4),
                             Text(
-                              new DateTime.parse(alert['createdAt']).toLocal().toString().substring(0, 16),
+                              DateTime.parse(alert['createdAt']).toLocal().toString().substring(0, 16),
                               style: const TextStyle(color: Colors.grey, fontSize: 12),
                             ),
                           ],
