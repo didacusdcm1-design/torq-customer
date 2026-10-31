@@ -128,17 +128,17 @@ class ApiService {
       return {'success': false, 'message': 'Network error'};
     }
   }
-  static Future<Map<String, dynamic>?> getCustomerActiveTrip() async {
+    static Future<Map<String, dynamic>?> getCustomerActiveTrip() async {
     try {
       final token = await getToken();
       final response = await http.get(
-        Uri.parse('$baseUrl/trips/customer/active'),
+        Uri.parse('$baseUrl/customer/active-trip'),
         headers: {'Authorization': 'Bearer $token'},
       );
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data == null) return null;
-        return data;
+        final text = response.body;
+        if (text == 'null' || text.isEmpty) return null;
+        return jsonDecode(text);
       }
       return null;
     } catch (e) {
@@ -193,3 +193,4 @@ class ApiService {
     }
   }
 }
+
