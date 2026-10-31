@@ -74,7 +74,8 @@ class _ActiveTripScreenState extends State<ActiveTripScreen> {
     if (_trip == null) return const Scaffold(backgroundColor: Color(0xFF0A0A0A), body: Center(child: CircularProgressIndicator()));
 
     final status = _trip!['status'];
-    final rider = _trip!['rider']; // Can be null if no rider accepted yet
+    // Safely check for rider
+    final rider = _trip!['rider'];
     final riderProfile = rider != null ? rider['riderProfile'] : null;
 
     return Scaffold(
@@ -147,7 +148,7 @@ class _ActiveTripScreenState extends State<ActiveTripScreen> {
                 ),
               ),
 
-            // Searching for rider animation
+            // Searching for rider animation (Only shows if no rider yet)
             if (rider == null)
               const Expanded(
                 child: Center(
