@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'chat_screen.dart';
 
 class ActiveTripScreen extends StatefulWidget {
   final Map<String, dynamic> initialTrip;
@@ -151,7 +152,21 @@ class _ActiveTripScreenState extends State<ActiveTripScreen> {
                               icon: Icons.chat_bubble_outline,
                               label: "Chat Driver",
                               color: const Color(0xFFFCD34D),
-                              onTap: () {},
+                              onTap: () {
+                                if (rider != null && riderProfile != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ChatScreen(
+                                        tripId: _trip!['id'],
+                                        senderId: _trip!['customerId'],
+                                        receiverId: rider['id'],
+                                        driverName: riderProfile['fullName'] ?? 'Driver',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
                             ),
                           ),
                           const SizedBox(width: 12),
